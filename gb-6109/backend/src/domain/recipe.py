@@ -1,5 +1,6 @@
+import hashlib
 import re
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 
 @dataclass(frozen=True)
@@ -7,6 +8,17 @@ class Recipe:
     code: str
     fine: int
     coarse: int
+
+    @property
+    def version(self):
+        """Content version used to prove an archive copy is the same revision."""
+        digest = hashlib.sha256(
+            f"{self.code}|{self.fine}|{self.coarse}".encode("utf-8")
+        ).hexdigest()
+        return digest
+
+    def to_dict(self):
+        return asdict(self)
 
     @classmethod
     def from_row(cls, row):

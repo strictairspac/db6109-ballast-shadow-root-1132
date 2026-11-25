@@ -2,6 +2,7 @@ import { api } from "../api/workbench.js";
 import { errorText, field } from "../components/common/fields.js";
 import { empty, pageHeading, section } from "../components/common/panel.js";
 import { resultTable } from "../components/common/table.js";
+import { repairTicketBoard, rootBoard } from "../components/common/rootBoard.js";
 import { submit } from "../hooks/submit.js";
 import { el } from "../utils/dom.js";
 import { cell, download, time } from "../utils/format.js";
@@ -52,6 +53,8 @@ export async function evidencePage(config, user, route) {
       el("details", {}, el("summary", {}, "证据摘要"), el("code", {}, run.digest))),
     el("dl", {class: "metrics"}, Object.entries(run.result.metrics).map(([label, value]) =>
       el("div", {}, el("dt", {}, label), el("dd", {}, cell(value))))),
+    rootBoard(run.result.root_board),
+    repairTicketBoard(run.result.repair_tickets),
     section("业务结果明细", run.result.rows.length ? resultTable(run.result.rows) : empty("此批次无明细。")),
     section("复核签署", signing));
 }

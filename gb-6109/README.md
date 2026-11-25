@@ -41,6 +41,30 @@ docker compose up -d --build --wait
 
 选用「BR-K7-1124 / K7 段」对应的演示资料，保存一份复演资料，再以默认参数 5 提交。worker 保存结果摘要、业务明细和 SHA-256。复核员登录后在「可见配方根」签署。
 
+## 坏页隔离与留档修复
+
+发布重演另内置三条坏页样本，仍使用默认页预算 5：
+
+- `BR-K7-1125 / K7 坏页双根隔离与续跑修复`：发布后 P3 同时被生效根 R1 和封存根 R0 引用。P3 损坏后，两边的 BR-053 都标为「仍隔离」，BR-051、BR-052 仍可查询。修复先在签名留档中核出 BR-053 的同版副本，可在写入前中断；续跑时原位恢复 P3，因此 5 页池已满也不需要新页。
+- `BR-K7-1126 / K7 坏页修复与换版签发并发`：修复停在核验检查点期间解封旧根并把 BR-053 换版签发。生效根始终读取新版 3100/6900；迟到的旧版修复有页代检查，不能覆盖已重新分配的新页。
+- `BR-K9-1125 / K9 坏页缺同版签档维持隔离`：留档虽有签名副本，但版本是 2900/7100，和根次记录的 2800/7200 不一致。修复结论为「核不出同版签名副本，维持隔离」。
+
+在资料页可点「坏页演练样本」把对应 JSON 填入编辑器；操作员也可在「发布重演」页直接点三个快捷演练按钮，系统会按默认页预算 5 建批并跳转。事件扩展如下：
+
+```json
+[
+  {"op": "sign_archive"},
+  {"op": "corrupt_page", "page": 3},
+  {"op": "repair_page", "page": 3, "ticket_id": "P3", "interrupt_at": "verified"},
+  {"op": "resume_repair", "ticket_id": "P3"},
+  {"op": "query_root", "recipe": "BR-053", "root": "active"}
+]
+```
+
+`corrupt_page` 也可用 `recipe`/`code` 定位；`repair_page` 只接受签名有效、配方版本和根次版本一致的留档副本。修复检查点保存在批次结果的 `repair_tickets`，中断后用同一 `ticket_id` 续跑。可见配方根页的「可见配方根：坏页隔离 / 恢复查询」表和查询框会显示每个根条目的「仍隔离 / 已恢复 / 正常」。
+
+接口读取入口：`GET /roots?run_id=<批次>&recipe=BR-053`、`GET /runs/<批次>/roots`、`GET /runs/<批次>/quarantine`、`GET /runs/<批次>/repair`。领域入口为 `src/domain/pager.py` 的 `ShadowPager.corrupt_page/read/root_board` 与 `src/domain/repair.py` 的 `PageRepairService.start/resume`。
+
 ## 开发说明
 
 | 部分 | 实现 |

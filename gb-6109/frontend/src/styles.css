@@ -98,6 +98,20 @@ td a[aria-current=true] { font-weight: 750; }
 .evidence select { width: fit-content; max-width: 100%; }
 .signature { border-left: .2rem solid var(--accent); padding-left: .85rem; }
 .signature p { margin: .35rem 0; overflow-wrap: anywhere; }
+.muted { color: var(--muted); }
+.template-bar { display: flex; flex-wrap: wrap; gap: .45rem; align-items: center; }
+.template-bar .secondary { padding: .35rem .55rem; font-size: .84rem; }
+.root-board input[type="search"] { width: min(100%, 22rem); }
+.root-status, .ticket-state {
+  display: inline-block; width: fit-content; font-size: .84rem; font-weight: 750;
+  padding: .22rem .55rem; border: 1px solid currentColor; border-radius: 999px;
+  white-space: nowrap;
+}
+.status-quarantined, .state-quarantined { color: var(--signal); background: color-mix(in srgb, var(--signal) 10%, var(--surface)); }
+.status-recovered, .state-completed { color: #176b4d; background: color-mix(in srgb, #176b4d 12%, var(--surface)); }
+.status-healthy, .state-verified, .state-restored { color: var(--accent); background: var(--tint); }
+.state-interrupted { color: #8a5a00; background: oklch(.94 .07 85); }
+.state-superseded { color: var(--muted); background: var(--tint); }
 @media (max-width: 1050px) {
   .shell { grid-template-columns: minmax(10rem, 15rem) minmax(0, 1fr); }
   .split { grid-template-columns: 1fr; }

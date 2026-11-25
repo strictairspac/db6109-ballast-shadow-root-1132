@@ -24,6 +24,39 @@ def run_detail(run_id: int):
         return runs.get(db, run_id)
 
 
+@router.get("/{run_id}/root", dependencies=[Depends(identity)])
+@router.get("/{run_id}/roots", dependencies=[Depends(identity)])
+@router.get("/{run_id}/root-board", dependencies=[Depends(identity)], include_in_schema=False)
+@router.get("/{run_id}/visible-roots", dependencies=[Depends(identity)], include_in_schema=False)
+def run_roots(run_id: int):
+    with engine.connect() as db:
+        run = runs.get(db, run_id)
+    result = run.get("result") or {}
+    board = result.get("root_board") or result.get("roots")
+    if board is None:
+        return {"run_id": run_id, "available": False, "entries": [], "quarantine": []}
+    return {"run_id": run_id, "available": True, **board}
+
+
+@router.get("/{run_id}/quarantine", dependencies=[Depends(identity)])
+@router.get("/{run_id}/isolation", dependencies=[Depends(identity)], include_in_schema=False)
+def run_quarantine(run_id: int):
+    roots = run_roots(run_id)
+    return {"run_id": run_id, "quarantine": roots.get("quarantine", []), "counts": roots.get("counts", {})}
+
+
+@router.get("/{run_id}/repair", dependencies=[Depends(identity)])
+def run_repair_tickets(run_id: int):
+    with engine.connect() as db:
+        run = runs.get(db, run_id)
+    result = run.get("result") or {}
+    return {
+        "run_id": run_id,
+        "tickets": result.get("repair_tickets", []),
+        "history": result.get("repair_history", []),
+    }
+
+
 @router.get("/{run_id}/review", response_model=ReviewEntry | None, dependencies=[Depends(identity)])
 def review_detail(run_id: int):
     with engine.connect() as db:
